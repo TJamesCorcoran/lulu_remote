@@ -1,0 +1,153 @@
+= LuluRemote
+
+Lulu.com is a print publisher.
+
+This Ruby / Rails library helps you interact with their website.
+
+The API lets you:
+
+* place orders
+
+== Installation
+
+1. add this to your Gemfile
+
+    gem "lulu_remote", :git =>"http://github.com/TJamesCorcoran/lulu_remote"
+
+2. at the command line type
+
+    sudo apt-get install qt5-qmake
+    bundle install
+
+
+3. get a username and password from Lulu
+
+4. Using credentials from previous step, add this to your config/application.rb
+
+    LuluRemote.configure do |config|
+      config.username                      = 'tru<x>'   
+      config.password                      = '<y>'
+    end
+
+5. That's it.  You can now begin interacting with the Lulu website programatically.
+
+== Development ==
+
+To develop this library
+
+  cd <location>
+  rails new <fake_app_name>
+  cd <fake_app_name>
+  edit Gemfile to contain
+  	   gem "lulu_remote",                         :path => "/home/tjic/personal/writing/ari/src/lulu_remote/Gemfile"
+  rails console  	   
+  LuluRemote.login
+
+== Use: Download Data Files
+
+Lulu supplied three data files.
+
+* preview - updated once per month; lists items available next month
+* master  - updated once per month; contains same items as previews, but w different fields
+* truall  - updated nightly; shows everything that is orderable or reorderable
+
+Here's how to download them:
+
+    
+    # download a "master" and a "preview" datafile from Lulu
+    #
+    LuluRemote.get_master(  "2015", "02")
+    => #<File:/home/xxx/src/yyy/lib/datafiles/lib/datafiles/201502/master.csv> 
+
+    LuluRemote.get_previews("2015", "02")
+    => #<File:/home/xxx/src/yyy/lib/datafiles/lib/datafiles/201502/previews.csv> 
+
+    # or get both at once
+    #
+    LuluRemote.get_both("2015", "02")
+    => [ #<File...> , #<File..> ]
+
+    # or get both for current month
+    LuluRemote.get_current()
+    => [ #<File...> , #<File..> ]
+
+    # get and parse truall file
+    LuluRemote.get_truall()
+    =>    [  {:code       =>"APR962656",
+            :title      =>"CRIME SUSPENSTORIES #17",
+            :price      =>"0000002.5000",
+            :type       =>"1",
+            :date       =>"09/13/96",
+            :base_price =>"0000002.5000 ",
+            :vendor     =>"WILLIAM M GAINES, VIA GEMSTONE ",
+            :discount   =>"E"},
+           {:code       =>"STAR06965",
+            :title      =>"LOVE & ROCKETS SC VOL 15 HERNANDEZ SATYRICON (MR) (O/A)",
+            :price      =>"0000018.9500 ",
+            :type       =>"3",
+            :date       =>"09/30/97",
+            :base_price =>"0000018.9500 ",
+            :vendor     =>"FANTAGRAPHICS BOOKS",
+            :discount   =>"E"},
+         ...
+         ]
+
+    # download your invoices
+    #
+    LuluRemote.invoices_download_all
+     => { <Date-1> => <invoice-as-text>,
+        <Date-2> => <invoice-as-text>,
+        <Date-3> => <invoice-as-text>
+        ...
+       }
+
+== Use: Get Release Dates, ISBNs, UPCs, and Cover Images 
+
+    # find Lulu's release date for items, specifying them by their itemcodes
+    #
+    LuluRemote.get_lulu_release_dates(["JAN152628", "JAN152627"] )
+    => {"JAN152628"=>Wed, 04 Mar 2015, 
+       "JAN152627"=>Wed, 04 Mar 2015} 
+
+    # get an image 
+    #
+    LuluRemote.get_lulu_image("JAN152628", "/tmp/JAN152628.jpg") 
+    => "/tmp/JAN152628.jpg" 
+
+
+    # get ISBNs for graphic novels
+    #    (works via block)
+    #
+    LuluRemote.get_GN_ISBNs(["AUG080052" , "JAN152628" ]) do |code, isbn| 
+      puts "#{code} #{isbn}" 
+    end
+
+    # get UPCs for a comic books
+    #    (works via block)
+    #
+    LuluRemote.get_IC_UPCS(["JAN152621", "JAN151887"] ) do |code, upc| 
+      puts "#{code} #{upc}" 
+    end
+
+== Use: Place Initial Orders and Reorders
+
+    # find deadline for initial order
+    #
+    LuluRemote.get_order_deadline()
+    => ["FEB15", Mon, 02 Mar 2015] 
+
+    # submit an initial order
+    #
+    LuluRemote.submit_initial!( { "JAN152628" => 1, "JAN152627" => 10 } )
+    => true
+
+    # submit a reorder
+    #
+    LuluRemote.submit_reorder!( { "JAN152628" => 1, "JAN152627" => 10 } )
+    => true
+       
+== Support
+
+If you have features you need, or want other help building or
+maintaining your comics-based ecommerce site, please contact me a
+tjamescorcoran@gmail.com
