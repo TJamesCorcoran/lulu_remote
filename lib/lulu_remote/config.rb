@@ -1,5 +1,3 @@
-puts "CONFIG"
-
 module LuluRemote
 
   def self.config
